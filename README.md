@@ -29,7 +29,7 @@ It provides tools for fetching course data, student profiles, and department inf
 2. Install required packages and initialize the environment:
 
    ```bash
-   pip install fastmcp uv
+   pip install uv
    ```
 
 ## Usage
