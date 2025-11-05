@@ -40,7 +40,7 @@ Start the server with:
 uv run src/server.py
 ```
 
-The server will run at [http://127.0.0.1:8001](http://127.0.0.1:8001).
+The server will run at [http://127.0.0.1:8001](http://127.0.0.1:8080).
 
 ## Project Structure
 
