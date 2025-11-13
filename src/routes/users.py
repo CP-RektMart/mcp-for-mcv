@@ -1,7 +1,5 @@
 from fastmcp import FastMCP
-from controllers.users import get_myprofile
-from config.contants import MCV, USERS
-from utils.strings import resources_path
+from controllers.users import get_me
 
 def register(mcp: FastMCP): 
-    mcp.resource(resources_path(MCV, USERS, "{user_id}"))(get_myprofile)
+    mcp.tool(name="get me")(get_me)

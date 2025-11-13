@@ -1,22 +1,43 @@
-# src/tools/course.py
 from fastmcp import FastMCP
-from repository.memory import departments_data, courses_data
+from fastmcp.server.dependencies import get_access_token
+import httpx
 
-async def get_departments() -> dict:
-    """Get the list of available departments."""
-    return {"departments": departments_data, "next_suggestion": "You can filter courses by providing a department name."}
+async def list_all_course():
+    token = get_access_token()
+    access_token = token.token  
 
-async def get_courses(search: str = "", department: str = "") -> dict:
-    """Get courses with optional filtering with search name or course details and can filter by department """
-    if department and department not in departments_data:
-        return {
-            "courses": [],
-            "next_suggestion": f"Department '{department}' not found. Try one of: {', '.join(departments_data)}"
-        }
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = "https://www.mycourseville.com/api/v1/public/get/user/courses?detail=1"
 
-    filtered = [
-        c for c in courses_data
-        if (not department or c["department"] == department)
-        and (not search or search.lower() in c["name"].lower())
-    ]
-    return {"courses": filtered, "next_suggestion": "You can search by course name or filter by department."}
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        courses = resp.json()
+        return courses
+    
+
+async def get_course_info(courseId: str):
+    token = get_access_token()
+    access_token = token.token 
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"https://www.mycourseville.com/api/v1/public/get/course/info?cv_cid={courseId}"
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        courses = resp.json()
+        return courses
+    
+async def get_course_material(courseId: str):
+    token = get_access_token()
+    access_token = token.token 
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"https://www.mycourseville.com/api/v1/public/get/course/materials?cv_cid={courseId}&detail=1&published=1"
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        courses = resp.json()
+        return courses
