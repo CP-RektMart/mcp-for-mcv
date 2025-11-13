@@ -29,7 +29,7 @@ It provides tools for fetching course data, student profiles, and department inf
 2. Install required packages and initialize the environment:
 
    ```bash
-   pip install fastmcp uv
+   pip install uv
    ```
 
 ## Usage
@@ -40,7 +40,7 @@ Start the server with:
 uv run src/server.py
 ```
 
-The server will run at [http://127.0.0.1:8001](http://127.0.0.1:8001).
+The server will run at [http://127.0.0.1:8001](http://127.0.0.1:8000).
 
 ## Project Structure
 
