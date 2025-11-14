@@ -1,18 +1,18 @@
-"""Google OAuth provider for FastMCP.
+"""mcv OAuth provider for FastMCP.
 
-This module provides a complete Google OAuth integration that's ready to use
+This module provides a complete mcv OAuth integration that's ready to use
 with just a client ID and client secret. It handles all the complexity of
-Google's OAuth flow, token validation, and user management.
+mcv's OAuth flow, token validation, and user management.
 
 Example:
     ```python
     from fastmcp import FastMCP
-    from fastmcp.server.auth.providers.google import GoogleProvider
+    from fastmcp.server.auth.providers.mcv import mcvProvider
 
-    # Simple Google OAuth protection
-    auth = GoogleProvider(
-        client_id="your-google-client-id.apps.googleusercontent.com",
-        client_secret="your-google-client-secret"
+    # Simple mcv OAuth protection
+    auth = mcvProvider(
+        client_id="your-mcv-client-id.apps.mcvusercontent.com",
+        client_secret="your-mcv-client-secret"
     )
 
     mcp = FastMCP("My Protected Server", auth=auth)
@@ -39,11 +39,11 @@ from dataclasses import dataclass
 
 logger = get_logger(__name__)
 
-class GoogleProviderSettings(BaseSettings):
-    """Settings for Google OAuth provider."""
+class mcvProviderSettings(BaseSettings):
+    """Settings for mcv OAuth provider."""
 
     model_config = SettingsConfigDict(
-        env_prefix="FASTMCP_SERVER_AUTH_GOOGLE_",
+        env_prefix="FASTMCP_SERVER_AUTH_mcv_",
         env_file=ENV_FILE,
         extra="ignore",
     )
@@ -125,25 +125,25 @@ class MCVTokenVerifier(TokenVerifier):
 
 
 class MCVProvider(OAuthProxy):
-    """Complete Google OAuth provider for FastMCP.
+    """Complete mcv OAuth provider for FastMCP.
 
-    This provider makes it trivial to add Google OAuth protection to any
-    FastMCP server. Just provide your Google OAuth app credentials and
+    This provider makes it trivial to add mcv OAuth protection to any
+    FastMCP server. Just provide your mcv OAuth app credentials and
     a base URL, and you're ready to go.
 
     Features:
-    - Transparent OAuth proxy to Google
-    - Automatic token validation via Google's tokeninfo API
-    - User information extraction from Google APIs
+    - Transparent OAuth proxy to mcv
+    - Automatic token validation via mcv's tokeninfo API
+    - User information extraction from mcv APIs
     - Minimal configuration required
 
     Example:
         ```python
         from fastmcp import FastMCP
-        from fastmcp.server.auth.providers.google import GoogleProvider
+        from fastmcp.server.auth.providers.mcv import mcvProvider
 
-        auth = GoogleProvider(
-            client_id="123456789.apps.googleusercontent.com",
+        auth = mcvProvider(
+            client_id="123456789.apps.mcvusercontent.com",
             client_secret="GOCSPX-abc123...",
             base_url="https://my-server.com"
         )
@@ -167,17 +167,17 @@ class MCVProvider(OAuthProxy):
         jwt_signing_key: str | bytes | NotSetT = NotSet,
         require_authorization_consent: bool = True,
     ):
-        """Initialize Google OAuth provider.
+        """Initialize mcv OAuth provider.
 
         Args:
-            client_id: Google OAuth client ID (e.g., "123456789.apps.googleusercontent.com")
-            client_secret: Google OAuth client secret (e.g., "GOCSPX-abc123...")
+            client_id: mcv OAuth client ID (e.g., "123456789.apps.mcvusercontent.com")
+            client_secret: mcv OAuth client secret (e.g., "GOCSPX-abc123...")
             base_url: Public URL where OAuth endpoints will be accessible (includes any mount path)
             issuer_url: Issuer URL for OAuth metadata (defaults to base_url). Use root-level URL
                 to avoid 404s during discovery when mounting under a path.
-            redirect_path: Redirect path configured in Google OAuth app (defaults to "/auth/callback")
+            redirect_path: Redirect path configured in mcv OAuth app (defaults to "/auth/callback")
 
-            timeout_seconds: HTTP request timeout for Google API calls
+            timeout_seconds: HTTP request timeout for mcv API calls
             allowed_client_redirect_uris: List of allowed redirect URI patterns for MCP clients.
                 If None (default), all URIs are allowed. If empty list, no URIs are allowed.
             client_storage: Storage backend for OAuth state (client registrations, encrypted tokens).
@@ -187,12 +187,12 @@ class MCVProvider(OAuthProxy):
                 they will be used as is. If a string is provided, it will be derived into a 32-byte key. If not
                 provided, the upstream client secret will be used to derive a 32-byte key using PBKDF2.
             require_authorization_consent: Whether to require user consent before authorizing clients (default True).
-                When True, users see a consent screen before being redirected to Google.
+                When True, users see a consent screen before being redirected to mcv.
                 When False, authorization proceeds directly without user confirmation.
                 SECURITY WARNING: Only disable for local development or testing environments.
         """
 
-        settings = GoogleProviderSettings.model_validate(
+        settings = mcvProviderSettings.model_validate(
             {
                 k: v
                 for k, v in {
@@ -213,11 +213,11 @@ class MCVProvider(OAuthProxy):
         # Validate required settings
         if not settings.client_id:
             raise ValueError(
-                "client_id is required - set via parameter or FASTMCP_SERVER_AUTH_GOOGLE_CLIENT_ID"
+                "client_id is required - set via parameter or FASTMCP_SERVER_AUTH_mcv_CLIENT_ID"
             )
         if not settings.client_secret:
             raise ValueError(
-                "client_secret is required - set via parameter or FASTMCP_SERVER_AUTH_GOOGLE_CLIENT_SECRET"
+                "client_secret is required - set via parameter or FASTMCP_SERVER_AUTH_mcv_CLIENT_SECRET"
             )
 
         # Apply defaults
@@ -225,7 +225,7 @@ class MCVProvider(OAuthProxy):
 
         allowed_client_redirect_uris_final = settings.allowed_client_redirect_uris
 
-        # Create Google token verifier
+        # Create mcv token verifier
         token_verifier = MCVTokenVerifier(
             timeout_seconds=timeout_seconds_final,
         )
@@ -235,7 +235,7 @@ class MCVProvider(OAuthProxy):
             settings.client_secret.get_secret_value() if settings.client_secret else ""
         )
 
-        # Initialize OAuth proxy with Google endpoints
+        # Initialize OAuth proxy with mcv endpoints
         super().__init__(
             upstream_authorization_endpoint="https://www.mycourseville.com/api/oauth/authorize",
             upstream_token_endpoint="https://www.mycourseville.com/api/oauth/access_token",
@@ -244,15 +244,14 @@ class MCVProvider(OAuthProxy):
             token_verifier=token_verifier,
             base_url=settings.base_url,
             redirect_path=settings.redirect_path,
-            issuer_url=settings.issuer_url
-            or settings.base_url,  # Default to base_url if not specified
+            issuer_url=settings.issuer_url or settings.base_url,  # Default to base_url if not specified
             allowed_client_redirect_uris=allowed_client_redirect_uris_final,
             client_storage=client_storage,
             jwt_signing_key=settings.jwt_signing_key,
             require_authorization_consent=require_authorization_consent,
         )
-
+    
         logger.debug(
-            "Initialized Google OAuth provider for client %s with scopes: %s",
+            "Initialized mcv OAuth provider for client %s with scopes: %s",
             settings.client_id,
         )
