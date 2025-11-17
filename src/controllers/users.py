@@ -8,3 +8,4 @@ async def get_me() -> dict:
     return {
         "user": token.claims,
     }
+
