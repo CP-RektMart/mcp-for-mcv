@@ -100,4 +100,7 @@ async def get_playlist(courseId: str):
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
         playlist = resp.json()
-        return playlist
+        return {
+            "suggestion": "Add the youtube link for the ready-to-use, from the youtube playlist field",
+            "data": playlist,
+        }
