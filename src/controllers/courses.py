@@ -111,7 +111,7 @@ async def get_online_meetings(courseId: str):
     access_token = token.token
 
     headers = {"Authorization": f"Bearer {access_token}"}
-    url = f"https://www.mycourseville.com/api/v1/public/get/course/online_meetings?cv_cid={courseId}"
+    url = f"https://www.mycourseville.com/api/v1/public/get/course/onlinemeetings?cv_cid={courseId}"
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
