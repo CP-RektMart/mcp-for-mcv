@@ -7,6 +7,7 @@ from controllers.courses import (
     get_course_announcements,
     get_assignment,
     get_playlist,
+    get_online_meetings,
 )
 
 
@@ -18,3 +19,4 @@ def register(mcp: FastMCP):
     mcp.tool()(get_course_announcements)
     mcp.tool()(get_assignment)
     mcp.tool()(get_playlist)
+    mcp.tool()(get_online_meetings)

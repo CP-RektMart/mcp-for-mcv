@@ -104,3 +104,17 @@ async def get_playlist(courseId: str):
             "suggestion": "Add the youtube link for the ready-to-use, from the youtube playlist field",
             "data": playlist,
         }
+
+
+async def get_online_meetings(courseId: str):
+    token = get_access_token()
+    access_token = token.token
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = f"https://www.mycourseville.com/api/v1/public/get/course/online_meetings?cv_cid={courseId}"
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        meetings = resp.json()
+        return meetings
