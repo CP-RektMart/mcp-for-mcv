@@ -1,16 +1,15 @@
 from fastmcp import FastMCP
-
-from auth.mcv import MCVProvider
 from config.contants import (
     APP_NAME,
     HOST,
+    PORT,
+    TRANSPORT,
     MCV_CLIENT_ID,
     MCV_CLIENT_SECRET,
     MCV_REDIRECT_PATH,
-    PORT,
-    TRANSPORT,
 )
-from routes import admins, courses, root, users
+from routes import root, users, courses, admins
+from auth.mcv import MCVProvider
 
 auth = MCVProvider(
     client_id=MCV_CLIENT_ID,
