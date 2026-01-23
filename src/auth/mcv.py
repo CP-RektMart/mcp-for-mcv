@@ -250,7 +250,7 @@ class MCVProvider(OAuthProxy):
             jwt_signing_key=settings.jwt_signing_key,
             require_authorization_consent=require_authorization_consent,
         )
-    
+
         logger.debug(
             "Initialized mcv OAuth provider for client %s with scopes: %s",
             settings.client_id,

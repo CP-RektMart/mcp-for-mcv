@@ -1,5 +1,5 @@
 from fastmcp import FastMCP
-from config.contants import (
+from config.constants import (
     APP_NAME,
     HOST,
     PORT,
