@@ -21,13 +21,9 @@ Example:
 
 from __future__ import annotations
 
-import time
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
 import httpx
-from key_value.aio.protocols import AsyncKeyValue
-from pydantic import AnyHttpUrl, SecretStr, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
-
 from fastmcp.server.auth import TokenVerifier
 from fastmcp.server.auth.auth import AccessToken
 from fastmcp.server.auth.oauth_proxy import OAuthProxy
@@ -35,9 +31,13 @@ from fastmcp.settings import ENV_FILE
 from fastmcp.utilities.auth import parse_scopes
 from fastmcp.utilities.logging import get_logger
 from fastmcp.utilities.types import NotSet, NotSetT
-from dataclasses import dataclass
+from key_value.aio.protocols import AsyncKeyValue
+from pydantic import AnyHttpUrl, SecretStr, field_validator
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from starlette.requests import Request
 
 logger = get_logger(__name__)
+
 
 class mcvProviderSettings(BaseSettings):
     """Settings for mcv OAuth provider."""
@@ -125,32 +125,7 @@ class MCVTokenVerifier(TokenVerifier):
 
 
 class MCVProvider(OAuthProxy):
-    """Complete mcv OAuth provider for FastMCP.
-
-    This provider makes it trivial to add mcv OAuth protection to any
-    FastMCP server. Just provide your mcv OAuth app credentials and
-    a base URL, and you're ready to go.
-
-    Features:
-    - Transparent OAuth proxy to mcv
-    - Automatic token validation via mcv's tokeninfo API
-    - User information extraction from mcv APIs
-    - Minimal configuration required
-
-    Example:
-        ```python
-        from fastmcp import FastMCP
-        from fastmcp.server.auth.providers.mcv import mcvProvider
-
-        auth = mcvProvider(
-            client_id="123456789.apps.mcvusercontent.com",
-            client_secret="GOCSPX-abc123...",
-            base_url="https://my-server.com"
-        )
-
-        mcp = FastMCP("My App", auth=auth)
-        ```
-    """
+    """Complete mcv OAuth provider for FastMCP."""
 
     def __init__(
         self,
@@ -165,32 +140,10 @@ class MCVProvider(OAuthProxy):
         allowed_client_redirect_uris: list[str] | NotSetT = NotSet,
         client_storage: AsyncKeyValue | None = None,
         jwt_signing_key: str | bytes | NotSetT = NotSet,
-        require_authorization_consent: bool = True,
+        # FIX 1: Disable consent by default so we can intercept the upstream URL directly
+        require_authorization_consent: bool = False,
     ):
-        """Initialize mcv OAuth provider.
-
-        Args:
-            client_id: mcv OAuth client ID (e.g., "123456789.apps.mcvusercontent.com")
-            client_secret: mcv OAuth client secret (e.g., "GOCSPX-abc123...")
-            base_url: Public URL where OAuth endpoints will be accessible (includes any mount path)
-            issuer_url: Issuer URL for OAuth metadata (defaults to base_url). Use root-level URL
-                to avoid 404s during discovery when mounting under a path.
-            redirect_path: Redirect path configured in mcv OAuth app (defaults to "/auth/callback")
-
-            timeout_seconds: HTTP request timeout for mcv API calls
-            allowed_client_redirect_uris: List of allowed redirect URI patterns for MCP clients.
-                If None (default), all URIs are allowed. If empty list, no URIs are allowed.
-            client_storage: Storage backend for OAuth state (client registrations, encrypted tokens).
-                If None, a DiskStore will be created in the data directory (derived from `platformdirs`). The
-                disk store will be encrypted using a key derived from the JWT Signing Key.
-            jwt_signing_key: Secret for signing FastMCP JWT tokens (any string or bytes). If bytes are provided,
-                they will be used as is. If a string is provided, it will be derived into a 32-byte key. If not
-                provided, the upstream client secret will be used to derive a 32-byte key using PBKDF2.
-            require_authorization_consent: Whether to require user consent before authorizing clients (default True).
-                When True, users see a consent screen before being redirected to mcv.
-                When False, authorization proceeds directly without user confirmation.
-                SECURITY WARNING: Only disable for local development or testing environments.
-        """
+        """Initialize mcv OAuth provider."""
 
         settings = mcvProviderSettings.model_validate(
             {
@@ -222,7 +175,6 @@ class MCVProvider(OAuthProxy):
 
         # Apply defaults
         timeout_seconds_final = settings.timeout_seconds or 10
-
         allowed_client_redirect_uris_final = settings.allowed_client_redirect_uris
 
         # Create mcv token verifier
@@ -235,16 +187,20 @@ class MCVProvider(OAuthProxy):
             settings.client_secret.get_secret_value() if settings.client_secret else ""
         )
 
-        # Initialize OAuth proxy with mcv endpoints
+        # Allow Claude's OIDC scopes to pass initial validation
+        user_scopes = settings.required_scopes or []
+        validation_scopes = list(set(user_scopes + ["openid", "email", "profile"]))
+
         super().__init__(
             upstream_authorization_endpoint="https://www.mycourseville.com/api/oauth/authorize",
             upstream_token_endpoint="https://www.mycourseville.com/api/oauth/access_token",
             upstream_client_id=settings.client_id,
             upstream_client_secret=client_secret_str,
+            valid_scopes=validation_scopes,
             token_verifier=token_verifier,
             base_url=settings.base_url,
             redirect_path=settings.redirect_path,
-            issuer_url=settings.issuer_url or settings.base_url,  # Default to base_url if not specified
+            issuer_url=settings.issuer_url or settings.base_url,
             allowed_client_redirect_uris=allowed_client_redirect_uris_final,
             client_storage=client_storage,
             jwt_signing_key=settings.jwt_signing_key,
@@ -254,4 +210,23 @@ class MCVProvider(OAuthProxy):
         logger.debug(
             "Initialized mcv OAuth provider for client %s with scopes: %s",
             settings.client_id,
+            validation_scopes,
         )
+
+    async def authorize(self, request: Request, *args, **kwargs) -> str:
+        """Intercept the authorize call to force explicit empty scope."""
+
+        url = await super().authorize(request, *args, **kwargs)
+        parsed = urlparse(url)
+        query_params = parse_qs(parsed.query)
+
+        if "scope" in query_params:
+            print(f"DEBUG: Found scopes: {query_params['scope']}")
+            del query_params["scope"]
+        else:
+            print("DEBUG: No scope param found to delete.")
+
+        new_query = urlencode(query_params, doseq=True)
+        new_url = urlunparse(parsed._replace(query=new_query))
+
+        return new_url
