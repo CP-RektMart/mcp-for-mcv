@@ -84,46 +84,35 @@ You can install FastAPI and FastMCP individually:
 ### Other MCP Clients
 (Coming soon.)
 
-## Tool Usage Examples
-Below are example MCP tool calls that can be used by MCP clients (Cursor, Claude, MCP Inspector, etc.) once the server is connected to MyCourseVille.
+## Available Tools
 
-#### 1. Get User Profile
-Natural Language Examples:
-```
-Get my user profile in mycourseville
-```
-```
-Get me mcv
-```
-Example Response:
-```
-{
-  "id": "123",
-  "display_name": "Siriwid Thongon",
-  "student_id": "6530414821",
-  "department": "Computer Engineering",
-  "email": "student@example.com"
-}
-```
+Below are the MCP tools available for use with MCP clients (Cursor, Claude, MCP Inspector, etc.) once the server is connected to MyCourseVille.
 
-#### 2. Get All User Courses
-Natural Language Examples:
-```
-List all my courses on MyCourseVille
-```
-```
-Show my classes this semester
-```
+### 🧑‍💻 User
 
-### 3. Another
-```
-Get material of course id 
-Get announcement
-Check my deadline 
-Check my instructor of this course
-Get Syllabus of this course
-Get courses order by ...
-```
+| Tool | Parameters | Description |
+|------|------------|-------------|
+| `get_me` | — | Get current user information |
+| `get_user_gradeletter` | `courseId: str` | Get user's letter grade for a specific course |
+
+### 📚 Course
+
+| Tool | Parameters | Description |
+|------|------------|-------------|
+| `list_all_courses` | — | List all courses the user is enrolled in |
+| `get_course_infos` | `courseId: str` | Get detailed information about a course |
+| `get_course_materials` | `courseId: str` | Get all published materials for a course |
+| `get_course_assignments` | `courseId: str` | Get all published assignments for a course |
+| `get_course_announcements` | `courseId: str` | Get all announcements for a course |
+| `get_assignment` | `itemID: str` | Get details of a specific assignment |
+| `get_playlist` | `courseId: str` | Get YouTube playlists for a course |
+| `get_online_meetings` | `courseId: str` | Get scheduled online meetings for a course |
+
+### 👨‍🏫 Staff
+
+| Tool | Parameters | Description |
+|------|------------|-------------|
+| `get_student_roster` | `courseId: str` | Get list of all students enrolled in a course |
 
 
 ## Project Structure
@@ -131,14 +120,27 @@ Get courses order by ...
 ```
 mcp-for-mcv/
 ├── src/
-│   ├── server.py
+│   ├── server.py              # Main entry point - registers all routes
 │   ├── controllers/
+│   │   ├── users.py           # User tool implementations
+│   │   ├── courses.py         # Course tool implementations
+│   │   └── admins.py          # Admin tool implementations
 │   ├── routes/
+│   │   ├── root.py            # HTTP endpoints (/, /health)
+│   │   ├── users.py           # Registers user-related tools
+│   │   ├── courses.py         # Registers course-related tools
+│   │   └── admins.py          # Registers admin-related tools
 │   ├── config/
-│   └──  auth/
-├── .env    
+│   │   └── constants.py       # Environment configuration
+│   ├── auth/
+│   │   └── mcv.py             # MyCourseVille OAuth provider
+│   └── utils/
+│       ├── mcv.py             # MCV API URL builder
+│       └── toon.py            # Response parser utility
+├── .env
+├── pyproject.toml
 ├── README.md
-└── ...
+└── uv.lock
 ```
 
 ## Contributing
