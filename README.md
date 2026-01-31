@@ -92,7 +92,8 @@ Below are the MCP tools available for use with MCP clients (Cursor, Claude, MCP 
 
 | Tool | Parameters | Description |
 |------|------------|-------------|
-| `get_me` | — | Get current user information |
+| `get_me` | — | Get current user's basic identity from access token |
+| `get_user_info` | — | Get user's detailed profile (student details, account info) |
 | `get_user_gradeletter` | `courseId: str` | Get user's letter grade for a specific course |
 
 ### 📚 Course
@@ -107,6 +108,7 @@ Below are the MCP tools available for use with MCP clients (Cursor, Claude, MCP 
 | `get_assignment` | `itemID: str` | Get details of a specific assignment |
 | `get_playlist` | `courseId: str` | Get YouTube playlists for a course |
 | `get_online_meetings` | `courseId: str` | Get scheduled online meetings for a course |
+| `get_course_schedule` | `courseId: str` | Get the schedule of a course |
 
 ### 👨‍🏫 Staff
 
