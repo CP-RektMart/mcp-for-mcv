@@ -66,7 +66,9 @@ async def get_course_announcements(courseId: str):
     access_token = token.token
 
     headers = {"Authorization": f"Bearer {access_token}"}
-    url = mcv(f"/public/get/course/announcements?cv_cid={courseId}&detail=1&published=1")
+    url = mcv(
+        f"/public/get/course/announcements?cv_cid={courseId}&detail=1&published=1"
+    )
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
@@ -118,3 +120,18 @@ async def get_online_meetings(courseId: str):
         resp.raise_for_status()
         meetings = resp.json()
         return toonParse(meetings)
+
+
+async def get_course_schedule(courseId: str):
+    """Get the schedule of a course."""
+    token = get_access_token()
+    access_token = token.token
+
+    headers = {"Authorization": f"Bearer {access_token}"}
+    url = mcv(f"/public/get/course/schedule?cv_cid={courseId}")
+
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url, headers=headers)
+        resp.raise_for_status()
+        schedule = resp.json()
+        return toonParse(schedule)
