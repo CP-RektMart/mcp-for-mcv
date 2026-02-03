@@ -1,8 +1,4 @@
 from utils.mcv import mcv_get
-from utils.toon import toonParse
-from fastmcp.server.dependencies import get_access_token
-from utils.mcv import mcv
-import httpx
 
 
 async def list_all_courses():
@@ -43,20 +39,10 @@ async def get_assignment(itemID: str):
 
 async def get_playlist(courseId: str):
     """Get YouTube playlists for a course."""
-    token = get_access_token()
-    access_token = token.token
-
-    headers = {"Authorization": f"Bearer {access_token}"}
-    url = mcv(f"/public/get/course/playlists?cv_cid={courseId}")
-
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url, headers=headers)
-        resp.raise_for_status()
-        playlist = resp.json()
-        return {
-            "suggestion": "Add the youtube link for the ready-to-use, from the youtube playlist field",
-            "data": toonParse(playlist),
-        }
+    return await mcv_get(
+        f"/public/get/course/playlists?cv_cid={courseId}",
+        suggestion="Add the youtube link for the ready-to-use, from the youtube playlist field",
+    )
 
 
 async def get_online_meetings(courseId: str):

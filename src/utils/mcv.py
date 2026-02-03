@@ -10,19 +10,28 @@ def mcv(path: str) -> str:
     return MCV_BASE_URL + path
 
 
-async def mcv_get(path: str) -> dict:
+def get_auth_headers() -> dict:
+    """Get authorization headers with Bearer token from current access token."""
+    token = get_access_token()
+    return {"Authorization": f"Bearer {token.token}"}
+
+
+async def mcv_get(path: str, suggestion: str = None) -> dict:
     """
     Make an authenticated GET request to MCV API.
 
     Handles token retrieval, authorization headers, and response parsing.
+    If suggestion is provided, returns {"suggestion": ..., "data": ...}.
     """
-    token = get_access_token()
-    access_token = token.token
-
-    headers = {"Authorization": f"Bearer {access_token}"}
+    headers = get_auth_headers()
     url = mcv(path)
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        return toonParse(resp.json())
+        data = toonParse(resp.json())
+
+        if suggestion is not None:
+            return {"data": data, "suggestion": suggestion}
+
+        return data
