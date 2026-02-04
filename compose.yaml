@@ -1,0 +1,21 @@
+services:
+  mcp-for-mcv:
+    # This names the running container "mcp-for-mcv"
+    container_name: mcp-for-mcv
+    # This tags the built image as "mcp-for-mcv:latest"
+    image: mcp-for-mcv:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    # Restart automatically if it crashes
+    restart: unless-stopped
+    # Optional: Mount a volume if your app saves data (e.g. logs or tokens)
+    # volumes:
+    #   - mcp_data:/app/data
+
+# volumes:
+#   mcp_data:
