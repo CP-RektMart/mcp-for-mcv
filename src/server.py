@@ -37,5 +37,10 @@ courses.register(mcp)
 admins.register(mcp)
 
 if __name__ == "__main__":
-    print(f"🚀 Starting {APP_NAME} on {TRANSPORT}://{HOST}:{PORT}")
-    mcp.run(transport=TRANSPORT, host=HOST, port=PORT)
+    # When running under Cursor via Docker, we use stdio transport.
+    # FastMCP's stdio mode must not receive host/port, and stdout must be pure MCP JSON.
+    if TRANSPORT == "stdio":
+        mcp.run(transport="stdio", show_banner=False)
+    else:
+        print(f"🚀 Starting {APP_NAME} on {TRANSPORT}://{HOST}:{PORT}")
+        mcp.run(transport=TRANSPORT, host=HOST, port=PORT)
