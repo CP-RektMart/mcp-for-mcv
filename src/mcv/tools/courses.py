@@ -1,25 +1,27 @@
-from fastmcp import FastMCP
 from fastmcp.server.dependencies import get_access_token
-from utils.toon import toonParse
-from utils.mcv import mcv
-
 import httpx
 
+from utils.toon import toonParse
+
+from mcv.helper import mcv
+
 async def list_all_courses():
+    """List all courses for the authenticated user."""
+
     token = get_access_token()
     access_token = token.token
 
     headers = {"Authorization": f"Bearer {access_token}"}
-    url = mcv("/public/get/user/courses?detail=1")
+    url = mcv("/public/get/user/courses")
 
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return resp.json()
 
 
 async def get_course_infos(courseId: str):
+    """Get detailed information for a specific course."""
     token = get_access_token()
     access_token = token.token
 
@@ -29,11 +31,11 @@ async def get_course_infos(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return toonParse(resp.json())
 
 
 async def get_course_materials(courseId: str):
+    """Retrieve published learning materials for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -43,11 +45,11 @@ async def get_course_materials(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return toonParse(resp.json())
 
 
 async def get_course_assignments(courseId: str):
+    """Retrieve published assignments for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -57,11 +59,11 @@ async def get_course_assignments(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return toonParse(resp.json())
 
 
 async def get_course_announcements(courseId: str):
+    """Retrieve published announcements for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -73,11 +75,11 @@ async def get_course_announcements(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return toonParse(resp.json())
 
 
 async def get_assignment(itemID: str):
+    """Get detailed information for a specific assignment."""
     token = get_access_token()
     access_token = token.token
 
@@ -87,11 +89,11 @@ async def get_assignment(itemID: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        courses = resp.json()
-        return toonParse(courses)
+        return toonParse(resp.json())
 
 
 async def get_playlist(courseId: str):
+    """Retrieve video playlists for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -101,14 +103,14 @@ async def get_playlist(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        playlist = resp.json()
         return {
-            "suggestion": "Add the youtube link for the ready-to-use, from the youtube playlist field",
-            "data": toonParse(playlist),
+            "suggestion": "Add the YouTube link from the playlist field for ready-to-use playback.",
+            "data": toonParse(resp.json()),
         }
 
 
 async def get_online_meetings(courseId: str):
+    """Retrieve online meeting links for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -118,12 +120,11 @@ async def get_online_meetings(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        meetings = resp.json()
-        return toonParse(meetings)
+        return toonParse(resp.json())
 
 
 async def get_course_schedule(courseId: str):
-    """Get the schedule of a course."""
+    """Retrieve the schedule for a course."""
     token = get_access_token()
     access_token = token.token
 
@@ -133,5 +134,4 @@ async def get_course_schedule(courseId: str):
     async with httpx.AsyncClient() as client:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
-        schedule = resp.json()
-        return toonParse(schedule)
+        return toonParse(resp.json())

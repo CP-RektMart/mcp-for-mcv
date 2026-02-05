@@ -1,9 +1,9 @@
 from fastmcp.server.dependencies import get_access_token
-from utils.toon import toonParse
-from utils.mcv import mcv
-
 import httpx
 
+from utils.toon import toonParse
+
+from mcv.helper import mcv
 
 async def get_me() -> dict:
     """
@@ -34,7 +34,7 @@ async def get_user_info() -> dict:
         resp = await client.get(url, headers=headers)
         resp.raise_for_status()
         user_info = resp.json()
-        return toonParse(user_info)
+        return toonParse(user_info.json)
 
 
 async def get_user_gradeletter(courseId: str):
