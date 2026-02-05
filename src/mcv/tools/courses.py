@@ -1,5 +1,4 @@
-from utils.mcv import mcv_get
-
+from mcv.helper import mcv_get
 
 async def list_all_courses():
     """List all courses the user is enrolled in."""

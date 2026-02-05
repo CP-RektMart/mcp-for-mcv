@@ -1,4 +1,4 @@
-from config import MCV_BASE_URL
+from mcv.env import MCV_BASE_URL
 from fastmcp.server.dependencies import get_access_token
 from utils.toon import toonParse
 

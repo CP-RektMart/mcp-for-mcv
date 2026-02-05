@@ -1,6 +1,5 @@
 from fastmcp.server.dependencies import get_access_token
-from utils.mcv import mcv_get
-
+from mcv.helper import mcv_get
 
 async def get_me() -> dict:
     """
